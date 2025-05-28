@@ -1,23 +1,25 @@
 import express from 'express';
-
 import verifytoken from "../middlewares/verifytoken.js";
-import { 
-    getCategory, 
-    getCategoryById, 
-    postCategory, 
-    updateCategory, 
-    deleteCategory 
-} from "../controllers/category/index.js";
+import {
+  getCategory,
+  getCategoryById,
+  postCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoriesForUser,
+//   initCategories,
+} from "../controllers/category.js";
 
 const router = express.Router();
 
+// router.post('/init', initCategories); // ← route d'initialisation (à placer AVANT verifytoken)
 router.use(verifytoken);
 
-// Toutes les routes liées aux transactions
-router.get('/', getCategory);             // GET /api/category
-router.get('/:id', getCategoryById);      // GET /api/category/:id
-router.post('/', postCategory);           // POST /api/category
-router.put('/:id', updateCategory);       // PUT /api/category/:id
-router.delete('/:id', deleteCategory);    // DELETE /api/category/:id
+router.get('/visible', getCategoriesForUser); // ← retourne les globales + perso pour un user
+router.get('/', getCategory);                 // ← toutes les catégories (admin ?)
+router.get('/:id', getCategoryById);
+router.post('/', postCategory);
+router.put('/:id', updateCategory);
+router.delete('/:id', deleteCategory);
 
 export default router;
