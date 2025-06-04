@@ -2,15 +2,15 @@ import Category from "../schema/category.js";
 
 // Récupérer les catégories visibles pour l'utilisateur (globales + ses perso)
 export const getCategoriesForUser = async (req, res) => {
+  const userId = req.userId;
   try {
-    const userId = req.userId;
     const categories = await Category.find({
       $or: [
         { isDefault: true },
         { userId: userId }
       ]
     });
-    res.json(categories);
+    res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur" });
   }
@@ -20,7 +20,7 @@ export const getCategoriesForUser = async (req, res) => {
 export const getCategory = async (req, res) => {
   try {
     const categories = await Category.find();
-    res.json(categories);
+    res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur" });
   }
@@ -28,12 +28,13 @@ export const getCategory = async (req, res) => {
 
 // Récupérer une catégorie par son ID
 export const getCategoryById = async (req, res) => {
+  const { id } = req.params;
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(id);
     if (!category) {
       return res.status(404).json({ message: "Catégorie non trouvée" });
     }
-    res.json(category);
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur" });
   }
@@ -41,8 +42,8 @@ export const getCategoryById = async (req, res) => {
 
 // Créer une nouvelle catégorie
 export const postCategory = async (req, res) => {
-  try {
-    const userId = req.userId;
+  const userId = req.userId;
+  try { 
     const newCategory = new Category({
       ...req.body,
       userId,
@@ -57,9 +58,10 @@ export const postCategory = async (req, res) => {
 
 // Mettre à jour une catégorie par son ID
 export const updateCategory = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
   try {
-    const userId = req.userId;
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(id);
 
     if (!category) return res.status(404).json({ message: "Catégorie non trouvée" });
 
@@ -81,8 +83,8 @@ export const updateCategory = async (req, res) => {
       return res.status(403).json({ message: "Interdit de modifier cette catégorie" });
     }
 
-    const updatedCategory = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedCategory);
+    const updatedCategory = await Category.findByIdAndUpdate(id, req.body, { new: true });
+    res.status(200).json(updatedCategory);
 
   } catch (error) {
     res.status(400).json({ message: "Erreur lors de la mise à jour de la catégorie" });
@@ -91,9 +93,10 @@ export const updateCategory = async (req, res) => {
 
 // Supprimer une catégorie par son ID
 export const deleteCategory = async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
   try {
-    const userId = req.userId;
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(id);
 
     if (!category) return res.status(404).json({ message: "Catégorie non trouvée" });
 
@@ -105,8 +108,8 @@ export const deleteCategory = async (req, res) => {
       return res.status(403).json({ message: "Interdit de supprimer cette catégorie" });
     }
 
-    await Category.findByIdAndDelete(req.params.id);
-    res.json({ message: "Catégorie supprimée avec succès" });
+    await Category.findByIdAndDelete(id);
+    res.status(200).json({ message: "Catégorie supprimée avec succès" });
 
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la suppression de la catégorie" });

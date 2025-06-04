@@ -57,9 +57,9 @@ export const signUp = async (req, res) => {
 
   try {
     // Vérifie que tous les champs sont présents
-    if (!firstname || !lastname || !username || !email || !password || !passwordConfirm || !accountType || budgetStart == null || taux == null) {
-      return res.status(400).json({ message: "Tous les champs sont obligatoires." });
-    }
+    // if (!firstname || !lastname || !username || !email || !password || !passwordConfirm || !accountType || budgetStart == null || taux == null) {
+    //   return res.status(400).json({ message: "Tous les champs sont obligatoires." });
+    // }
 
     // Vérification mot de passe = confirmation
     if (password !== passwordConfirm) {
@@ -157,12 +157,12 @@ export const signUp = async (req, res) => {
 
 export const getUser = async (req, res) => {
   try {
-    const userId = req.userId; // ou req.params.id si route /api/user/:id
+    // const userId = req.userId; // ou req.params.id si route /api/user/:id
     const user = await User.find().select('-passwordHash'); // ne pas renvoyer le hash mdp
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -170,13 +170,13 @@ export const getUser = async (req, res) => {
 };
 
 export const getUserById = async (req, res) => {
-  try {
-    const userId = req.userId; // ou req.params.id si route /api/user/:id
+  const userId = req.userId;
+  try { // ou req.params.id si route /api/user/:id
     const user = await User.findById(userId).select('-passwordHash'); // ne pas renvoyer le hash mdp
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
@@ -184,10 +184,9 @@ export const getUserById = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
+  const userId = req.userId; // récupéré depuis le middleware d'authentification
+  const { password, passwordConfirm, ...updateData } = req.body;
   try {
-    const userId = req.userId; // récupéré depuis le middleware d'authentification
-    const { password, passwordConfirm, ...updateData } = req.body;
-
     // Si l'utilisateur veut changer son mot de passe
     if (password || passwordConfirm) {
       if (password !== passwordConfirm) {
@@ -204,7 +203,7 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
 
-    res.json(updatedUser);
+    res.status(200).json(updatedUser);
 
   } catch (error) {
     console.error(error);
@@ -213,23 +212,20 @@ export const updateUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
+  const userId = req.userId;
   try {
-    const userId = req.userId; // à récupérer depuis middleware d'authentification
 
-    // Supprimer tous les comptes de cet utilisateur
     await Account.deleteMany({ userId });
 
-    // Supprimer toutes les transactions liées
     await Transaction.deleteMany({ userId });
 
-    // Supprimer toutes les catégories personnalisées
     await Category.deleteMany({ userId });
 
     const deletedUser = await User.findByIdAndDelete(userId);
     if (!deletedUser) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
-    res.json({ message: "Utilisateur supprimé avec succès" });
+    res.status(200).json({ message: "Utilisateur supprimé avec succès" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur" });

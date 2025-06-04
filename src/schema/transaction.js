@@ -8,7 +8,7 @@ const transactionSchema = new mongoose.Schema({
   beneficiare: { type: String, required: true },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   description: { type: String, required: true },
-  type: { type: String, enum: ['debit', 'dépense'], required: true },
+  type: { type: String, enum: ['debit', 'credit'], required: true },
   amount: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

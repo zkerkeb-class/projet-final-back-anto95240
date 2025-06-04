@@ -6,7 +6,7 @@ const accountSchema = new mongoose.Schema({
   type: { type: String, required: true },
   balance: { type: Number, required: true },
   budgetStart: { type: Number, required: true },
-  taux: { type: Number, required: false, default: 0 },
+  taux: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
