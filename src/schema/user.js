@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   passwordHash: { type: String, required: true },
   isRemember: { type: Boolean, default: false },
-  theme: { type: String, enum: ['light', 'dark', 'auto'], default: 'light' },
   image: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

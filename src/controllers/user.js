@@ -31,7 +31,6 @@ export const login = async (req, res) => {
         lastname: user.lastname,
         username: user.username,
         email: user.email,
-        theme: user.theme,
         image: user.image,
       }
     });
@@ -136,7 +135,6 @@ export const signUp = async (req, res) => {
         lastname: newUser.lastname,
         username: newUser.username,
         email: newUser.email,
-        theme: newUser.theme,
         image: newUser.image,
       },
       account: {
