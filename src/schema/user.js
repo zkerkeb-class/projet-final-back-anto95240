@@ -7,7 +7,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   passwordHash: { type: String, required: true },
   isRemember: { type: Boolean, default: false },
-  image: { type: String, default: "" },
+  image: {
+    type: String,
+    default: "https://cdn-icons-png.flaticon.com/512/847/847969.png" // image par défaut
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

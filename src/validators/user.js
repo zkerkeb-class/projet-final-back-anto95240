@@ -20,16 +20,16 @@ export const userSignUpSchema = Joi.object({
   }),
   accountType: Joi.string().required(),
   budgetStart: Joi.number().min(0).required(),
-  taux: Joi.alternatives().conditional('accountType', {
+  taux: Joi.when("type", {
     is: Joi.valid('Épargne', 'Investissement'),
-    then: Joi.number().precision(2).min(0).required(),
-    otherwise: Joi.forbidden()
-  })
+    then: Joi.number().min(0).optional(),
+    otherwise: Joi.forbidden(),
+  }),
 });
 
 export const loginSchema = Joi.object({
-  email: Joi.string().email(),
-  username: Joi.string(),
+  login: Joi.string().required(),
+  // username: Joi.string(),
   password: Joi.string().required(),
 });
 

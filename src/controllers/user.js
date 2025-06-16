@@ -7,12 +7,15 @@ import Transaction from '../schema/transaction.js';
 import Category from '../schema/category.js';
 
 export const login = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { login, password } = req.body;
 
   try {
     // Cherche l'utilisateur par email ou username
     const user = await User.findOne({
-      $or: [{ email }, { username }]
+      $or: [
+        { email: login }, 
+        { username: login }
+      ]
     });
     if (!user) return res.status(401).json({ message: "Email ou mot de passe invalide" });
 
@@ -21,12 +24,20 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe invalide" });
 
     // Génère un token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
+    const sessionToken = jwt.sign(
+      {
+        uid: user._id,
+        username: user.username,
+        email: user.email
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+  
     res.status(200).json({
-      token,
+      token: sessionToken ,
       user: {
-        id: user._id,
+        uid: user._id,
         firstname: user.firstname,
         lastname: user.lastname,
         username: user.username,
@@ -55,10 +66,6 @@ export const signUp = async (req, res) => {
   } = req.body;
 
   try {
-    // Vérifie que tous les champs sont présents
-    // if (!firstname || !lastname || !username || !email || !password || !passwordConfirm || !accountType || budgetStart == null || taux == null) {
-    //   return res.status(400).json({ message: "Tous les champs sont obligatoires." });
-    // }
 
     // Vérification mot de passe = confirmation
     if (password !== passwordConfirm) {
@@ -76,7 +83,7 @@ export const signUp = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const accountTypesWithoutTaux = ['Courant', 'Bancaire'];
+    const accountTypesWithoutTaux = ['Courant', 'Bancaire'].map(type => type.toLowerCase());
     let finalTaux = taux;
 
     if (accountTypesWithoutTaux.includes(accountType)) {
@@ -101,11 +108,10 @@ export const signUp = async (req, res) => {
     const formattedType = accountType.charAt(0).toUpperCase() + accountType.slice(1).toLowerCase();
     const name = `Compte ${formattedType}`;
 
-
     const newAccount = new Account({
       userId: newUser._id,
-      name: name,
-      type: accountType,
+      name,
+      type: formattedType,
       balance: budgetStart,  // le solde initial = budget de départ
       budgetStart,
       taux: finalTaux,
@@ -168,7 +174,7 @@ export const getUser = async (req, res) => {
 };
 
 export const getUserById = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.params.id;
   try { // ou req.params.id si route /api/user/:id
     const user = await User.findById(userId).select('-passwordHash'); // ne pas renvoyer le hash mdp
     if (!user) {
@@ -182,7 +188,7 @@ export const getUserById = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const userId = req.userId; // récupéré depuis le middleware d'authentification
+  const userId = req.params.id;
   const { password, passwordConfirm, ...updateData } = req.body;
   try {
     // Si l'utilisateur veut changer son mot de passe
@@ -210,7 +216,7 @@ export const updateUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-  const userId = req.userId;
+  const userId = req.params.id;
   try {
 
     await Account.deleteMany({ userId });
