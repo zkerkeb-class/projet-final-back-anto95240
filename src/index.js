@@ -1,4 +1,4 @@
-
+import fs from 'fs';
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express from "express";
@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 
+const uploadDir = 'uploads';
 
 dotenv.config();
 
@@ -21,12 +22,16 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log('MongoDB connecté'))
   .catch(err => console.error('Erreur MongoDB:', err));
 
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 //     REQUETE API POUR LES TRANSACTIONS  
 app.use('/api/transaction', transactionRoutes);
 
 
 //     REQUETE API EN LIEN AVEC L'UTILISATEUR
+app.use('/uploads', express.static('uploads'));
 app.use('/api/user', userRoutes);
 
 //     REQUETE API POUR LES CATEGORY

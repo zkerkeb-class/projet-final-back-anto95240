@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
 
 import User from "../schema/user.js"
 import Account from '../schema/account.js';
@@ -131,12 +133,12 @@ export const signUp = async (req, res) => {
     await Category.insertMany(personalizedCategories);
 
     // Crée un token JWT
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ uid: newUser._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.status(201).json({
       token,
       user: {
-        id: newUser._id,
+        uid: newUser._id,
         firstname: newUser.firstname,
         lastname: newUser.lastname,
         username: newUser.username,
@@ -144,7 +146,7 @@ export const signUp = async (req, res) => {
         image: newUser.image,
       },
       account: {
-        id: newAccount._id,
+        uid: newAccount._id,
         name: newAccount.name,
         type: newAccount.type,
         balance: newAccount.balance,
@@ -155,6 +157,22 @@ export const signUp = async (req, res) => {
 
   } catch (error) {
     console.error("Erreur lors de l'inscription :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+export const getMe = async (req, res) => {
+    const userId = req.userId; // Injecté par le middleware verifytoken    
+    console.log("UserID extrait du token :", userId);
+
+  try {
+    const user = await User.findById(userId).select('-passwordHash');
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Erreur dans getMe :", error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -173,44 +191,52 @@ export const getUser = async (req, res) => {
   }
 };
 
-export const getUserById = async (req, res) => {
-  const userId = req.params.id;
-  try { // ou req.params.id si route /api/user/:id
-    const user = await User.findById(userId).select('-passwordHash'); // ne pas renvoyer le hash mdp
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
-    }
-    res.status(200).json(user);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-};
-
 export const updateUser = async (req, res) => {
   const userId = req.params.id;
   const { password, passwordConfirm, ...updateData } = req.body;
+
   try {
-    // Si l'utilisateur veut changer son mot de passe
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    // Gestion du mot de passe
     if (password || passwordConfirm) {
       if (password !== passwordConfirm) {
+        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(400).json({ message: "Le mot de passe et sa confirmation ne correspondent pas." });
       }
       const salt = await bcrypt.genSalt(10);
       updateData.passwordHash = await bcrypt.hash(password, salt);
     }
 
-    // Mise à jour utilisateur (exclut password et passwordConfirm)
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-passwordHash');
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    // Gestion de l'image avatar
+    if (req.file) {
+      // Supprimer l'ancien fichier si existant
+      if (existingUser.image) {
+        const oldPath = path.join('uploads', existingUser.image);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      updateData.image = req.file.filename;
     }
+
+    // Nettoyage des champs non modifiables
+    delete updateData._id;
+    delete updateData.__v;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    ).select('-passwordHash');
 
     res.status(200).json(updatedUser);
 
   } catch (error) {
     console.error(error);
+    if (req.file) fs.unlinkSync(req.file.path);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
