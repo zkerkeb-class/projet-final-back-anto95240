@@ -210,7 +210,7 @@ export const updateUser = async (req, res) => {
         const oldPath = path.join('uploads', existingUser.image);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
-      updateData.image = req.file.filename;
+      updateData.image = `uploads/${req.file.filename}`;
     }
 
     // Nettoyage des champs non modifiables
@@ -235,6 +235,11 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const userId = req.params.id;
   try {
+
+    if (existingUser.image && existingUser.image.startsWith('uploads/')) {
+      const oldPath = path.join(existingUser.image);
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    }
 
     await Account.deleteMany({ userId });
 
