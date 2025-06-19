@@ -18,18 +18,12 @@ export const userSignUpSchema = Joi.object({
   passwordConfirm: Joi.string().valid(Joi.ref('password')).required().messages({
     'any.only': 'Les mots de passe ne correspondent pas.'
   }),
-  accountType: Joi.string().required(),
+  accountName: Joi.string().required(),
   budgetStart: Joi.number().min(0).required(),
-  taux: Joi.when("type", {
-    is: Joi.valid('Épargne', 'Investissement'),
-    then: Joi.number().min(0).optional(),
-    otherwise: Joi.forbidden(),
-  }),
 });
 
 export const loginSchema = Joi.object({
   login: Joi.string().required(),
-  // username: Joi.string(),
   password: Joi.string().required(),
 });
 

@@ -62,10 +62,10 @@ export const signUp = async (req, res) => {
     email,
     password,
     passwordConfirm,
-    accountType,
     budgetStart,
-    taux
+    accountName
   } = req.body;
+    console.log("Reçu côté backend :", req.body);
 
   try {
 
@@ -80,21 +80,14 @@ export const signUp = async (req, res) => {
       return res.status(409).json({ message: "Cet email est déjà utilisé." });
     }
 
+    if (!budgetStart || !accountName ) {
+      return res.status(400).json({ message: "Les champs 'accountName ' et 'budgetStart' sont requis." });
+    }
+
 
     // Hash du mot de passe
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-
-    const accountTypesWithoutTaux = ['Courant', 'Bancaire'].map(type => type.toLowerCase());
-    let finalTaux = taux;
-
-    if (accountTypesWithoutTaux.includes(accountType)) {
-      finalTaux = 0;
-    } else {
-      if (finalTaux == null) {
-        return res.status(400).json({ message: "Le taux est obligatoire pour ce type de compte." });
-      }
-    }
 
     // Crée le nouvel utilisateur
     const newUser = new User({
@@ -107,16 +100,15 @@ export const signUp = async (req, res) => {
 
     await newUser.save();
 
-    const formattedType = accountType.charAt(0).toUpperCase() + accountType.slice(1).toLowerCase();
-    const name = `Compte ${formattedType}`;
+    // const formattedType = accountType.charAt(0).toUpperCase() + accountType.slice(1).toLowerCase();
+    // const name = `Compte ${formattedType}`;
 
     const newAccount = new Account({
       userId: newUser._id,
-      name,
-      type: formattedType,
+      name: accountName,
+      type: "Courant",
       balance: budgetStart,  // le solde initial = budget de départ
       budgetStart,
-      taux: finalTaux,
     });
 
     await newAccount.save();
@@ -150,8 +142,7 @@ export const signUp = async (req, res) => {
         name: newAccount.name,
         type: newAccount.type,
         balance: newAccount.balance,
-        budgetStart: newAccount.budgetStart,
-        taux: newAccount.taux,
+        budgetStart: newAccount.budgetStart
       }
     });
 
