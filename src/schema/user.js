@@ -6,7 +6,6 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, unique: true, required: true },
   passwordHash: { type: String, required: true },
-  isRemember: { type: Boolean, default: false },
   image: {
     type: String,
     default: "https://cdn-icons-png.flaticon.com/512/847/847969.png" // image par défaut

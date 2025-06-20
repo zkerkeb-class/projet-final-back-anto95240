@@ -1,10 +1,10 @@
 import multer from 'multer';
 import path from 'path';
 
-// Dossier où tu veux stocker les images uploadées (ex: ./uploads/)
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // dossier à créer manuellement ou vérifier qu'il existe
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
     // On génère un nom unique (ex: userId + date + extension)

@@ -12,7 +12,7 @@ export const login = async (req, res) => {
   const { login, password } = req.body;
 
   try {
-    // Cherche l'utilisateur par email ou username
+    
     const user = await User.findOne({
       $or: [
         { email: login }, 
@@ -21,11 +21,9 @@ export const login = async (req, res) => {
     });
     if (!user) return res.status(401).json({ message: "Email ou mot de passe invalide" });
 
-    // Vérifie le mot de passe
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe invalide" });
 
-    // Génère un token
     const sessionToken = jwt.sign(
       {
         uid: user._id,
@@ -69,12 +67,10 @@ export const signUp = async (req, res) => {
 
   try {
 
-    // Vérification mot de passe = confirmation
     if (password !== passwordConfirm) {
       return res.status(400).json({ message: "Les mots de passes ne correspondent pas." });
     }
 
-    // Vérifie si l'utilisateur existe déjà
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Cet email est déjà utilisé." });
@@ -84,12 +80,10 @@ export const signUp = async (req, res) => {
       return res.status(400).json({ message: "Les champs 'accountName ' et 'budgetStart' sont requis." });
     }
 
-
     // Hash du mot de passe
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Crée le nouvel utilisateur
     const newUser = new User({
       firstname,
       lastname,
@@ -99,9 +93,6 @@ export const signUp = async (req, res) => {
     });
 
     await newUser.save();
-
-    // const formattedType = accountType.charAt(0).toUpperCase() + accountType.slice(1).toLowerCase();
-    // const name = `Compte ${formattedType}`;
 
     const newAccount = new Account({
       userId: newUser._id,
@@ -124,7 +115,6 @@ export const signUp = async (req, res) => {
     }));
     await Category.insertMany(personalizedCategories);
 
-    // Crée un token JWT
     const token = jwt.sign({ uid: newUser._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.status(201).json({
@@ -153,7 +143,7 @@ export const signUp = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
-    const userId = req.userId; // Injecté par le middleware verifytoken    
+    const userId = req.userId;   
     console.log("UserID extrait du token :", userId);
 
   try {
@@ -206,14 +196,13 @@ export const updateUser = async (req, res) => {
     // Gestion de l'image avatar
     if (req.file) {
       // Supprimer l'ancien fichier si existant
-      if (existingUser.image) {
-        const oldPath = path.join('uploads', existingUser.image);
+      if (existingUser.image && existingUser.image.startsWith('uploads/')) {
+        const oldPath = path.join(existingUser.image);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
       updateData.image = `uploads/${req.file.filename}`;
     }
 
-    // Nettoyage des champs non modifiables
     delete updateData._id;
     delete updateData.__v;
 
@@ -235,11 +224,6 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   const userId = req.params.id;
   try {
-
-    if (existingUser.image && existingUser.image.startsWith('uploads/')) {
-      const oldPath = path.join(existingUser.image);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    }
 
     await Account.deleteMany({ userId });
 
