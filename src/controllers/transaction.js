@@ -1,24 +1,26 @@
 import Transaction from "../schema/transaction.js";
 import Category from "../schema/category.js";
+import { transactionSchema } from "../validators/transaction.js";
 
 // Récupérer toutes les transactions
 export const getTransaction = async (req, res) => {
   try {
-    const transactions = await Transaction.find().populate({
-      path: 'categoryId',
-      select: 'name'
-    });
+    const transactions = await Transaction.find()
+      .populate({ path: "categoryId", select: "name" })
+      .populate({ path: "accountId", select: "type" });
 
-    // Map pour ne retourner que le nom de la catégorie (categoryName) au lieu de categoryId complet
     const results = transactions.map(t => ({
       _id: t._id,
       date: t.date,
       paiement: t.paiement,
       beneficiare: t.beneficiare,
-      categoryName: t.categoryId ? t.categoryId.name : null,
+      categoryId: t.categoryId?._id || null,
+      categoryName: t.categoryId?.name || null,
       description: t.description,
-      type: t.type,
+      transactionType: t.type,
       amount: t.amount,
+      accountId: t.accountId?._id || null,
+      accountType: t.accountId?.type || null,
     }));
 
     res.status(200).json(results);
@@ -28,38 +30,48 @@ export const getTransaction = async (req, res) => {
 };
 
 // Récupérer une transaction par son ID
-export const getTransactionById = async (req, res) => {
-  const { id } = req.params;
+export const getTransactionsByAccountId = async (req, res) => {
+  const { accountId } = req.params;
   try {
-    const transaction = await Transaction.findById(id).populate({
-      path: 'categoryId',
-      select: 'name'
-    });
-    if (!transaction) {
-      return res.status(404).json({ message: "Transaction non trouvée" });
+    const transactions = await Transaction.find({ accountId })
+      .populate({ path: "categoryId", select: "name" })
+      .populate({ path: "accountId", select: "type" });
+
+    if (!transactions.length) {
+      return res.status(404).json({ message: "Aucune transaction trouvée" });
     }
 
-    res.status(200).json({
-      _id: transaction._id,
-      date: transaction.date,
-      paiement: transaction.paiement,
-      beneficiare: transaction.beneficiare,
-      categoryName: transaction.categoryId ? transaction.categoryId.name : null,
-      description: transaction.description,
-      type: transaction.type,
-      amount: transaction.amount,
-    });
+    const results = transactions.map(t => ({
+      _id: t._id,
+      date: t.date,
+      paiement: t.paiement,
+      beneficiare: t.beneficiare,
+      categoryId: t.categoryId?._id || null,
+      categoryName: t.categoryId?.name || null,
+      description: t.description,
+      transactionType: t.type,
+      amount: t.amount,
+      accountId: t.accountId?._id || null,
+      accountType: t.accountId?.type || null,
+    }));
+
+    res.status(200).json(results);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
 // Créer une nouvelle transaction
 export const postTransaction = async (req, res) => {
-  const { date, paiement, beneficiare, categoryName, description, type, amount } = req.body;
+  const { date, paiement, beneficiare, categoryId, description, type, amount, accountId } = req.body;
+  console.log("Requête reçue :", req.body);
+  if (!accountId) {
+    return res.status(400).json({ message: "L'ID du compte est obligatoire." });
+  }
+
   try {
-    // Trouver la catégorie par nom
-    const category = await Category.findOne({ name: categoryName });
+    const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(400).json({ message: "Catégorie invalide ou introuvable." });
     }
@@ -68,15 +80,18 @@ export const postTransaction = async (req, res) => {
       date,
       paiement,
       beneficiare,
-      categoryId: category._id,
+      categoryId,
       description,
       type,
       amount,
+      accountId,
     });
 
     await newTransaction.save();
+
     res.status(201).json(newTransaction);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ message: "Erreur lors de la création de la transaction" });
   }
 };
@@ -84,35 +99,29 @@ export const postTransaction = async (req, res) => {
 // Mettre à jour une transaction par son ID
 export const updateTransaction = async (req, res) => {
   const { id } = req.params;
-  const { date, paiement, beneficiare, categoryName, description, type, amount } = req.body;
+  const { categoryId, categoryName, ...rest } = req.body;
+
   try {
-    let categoryId = undefined;
-    if (categoryName) {
+    const updateData = { ...rest };
+
+    if (categoryId) {
+      updateData.categoryId = categoryId;
+    } else if (categoryName) {
       const category = await Category.findOne({ name: categoryName });
       if (!category) {
-        return res.status(400).json({ message: "Catégorie invalide ou introuvable." });
+        return res.status(400).json({ message: "Catégorie introuvable." });
       }
-      categoryId = category._id;
+      updateData.categoryId = category._id;
     }
 
-    // Construction de l'objet update, on remplace categoryId si on a trouvé la catégorie
-    const updateData = {
-      ...(date && { date }),
-      ...(paiement && { paiement }),
-      ...(beneficiare && { beneficiare }),
-      ...(categoryId && { categoryId }),
-      ...(description && { description }),
-      ...(type && { type }),
-      ...(amount != null && { amount }),
-    };
-
-    const updatedTransaction = await Transaction.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedTransaction) {
+    const updated = await Transaction.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updated) {
       return res.status(404).json({ message: "Transaction non trouvée" });
     }
 
-    res.status(200).json(updatedTransaction);
+    res.status(200).json(updated);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ message: "Erreur lors de la mise à jour de la transaction" });
   }
 };
@@ -121,12 +130,34 @@ export const updateTransaction = async (req, res) => {
 export const deleteTransaction = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedTransaction = await Transaction.findByIdAndDelete(id);
-    if (!deletedTransaction) {
+    const deleted = await Transaction.findByIdAndDelete(id);
+    if (!deleted ) {
       return res.status(404).json({ message: "Transaction non trouvée" });
     }
     res.status(200).json({ message: "Transaction supprimée avec succès" });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Erreur lors de la suppression de la transaction" });
+  }
+};
+
+
+
+// Route d’admin pour migrer les anciennes transactions sans champ `type`
+export const migrateTransactionsType = async (req, res) => {
+  try {
+    // Mise à jour : ajoute type = "debit" si type n'existe pas
+    const result = await Transaction.updateMany(
+      { type: { $exists: false } },
+      { $set: { type: "credit" } }
+    );
+
+    res.status(200).json({
+      message: `${result.modifiedCount} transactions migrées avec succès`,
+      result,
+    });
+  } catch (error) {
+    console.error("Erreur migration transactions :", error);
+    res.status(500).json({ message: "Erreur serveur lors de la migration" });
   }
 };
