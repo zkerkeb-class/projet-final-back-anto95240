@@ -8,6 +8,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import { initCategories } from './controllers/category.js';
 
 const uploadDir = 'uploads';
 
@@ -18,9 +19,17 @@ app.use(cors());
 app.use(express.json());
 
 // Connexion à MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-}).then(() => console.log('MongoDB connecté'))
+// mongoose.connect(process.env.MONGO_URI, {
+// }).then(() => console.log('MongoDB connecté'))
+//   .catch(err => console.error('Erreur MongoDB:', err));
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(async() => {
+    console.log('MongoDB connecté');
+    await initCategories();
+  })
   .catch(err => console.error('Erreur MongoDB:', err));
+
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -28,7 +37,6 @@ if (!fs.existsSync(uploadDir)) {
 
 //     REQUETE API POUR LES TRANSACTIONS  
 app.use('/api/transaction', transactionRoutes);
-
 
 //     REQUETE API EN LIEN AVEC L'UTILISATEUR
 app.use('/uploads', express.static('uploads'));

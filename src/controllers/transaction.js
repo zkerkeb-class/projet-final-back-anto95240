@@ -140,24 +140,3 @@ export const deleteTransaction = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la suppression de la transaction" });
   }
 };
-
-
-
-// Route d’admin pour migrer les anciennes transactions sans champ `type`
-export const migrateTransactionsType = async (req, res) => {
-  try {
-    // Mise à jour : ajoute type = "debit" si type n'existe pas
-    const result = await Transaction.updateMany(
-      { type: { $exists: false } },
-      { $set: { type: "credit" } }
-    );
-
-    res.status(200).json({
-      message: `${result.modifiedCount} transactions migrées avec succès`,
-      result,
-    });
-  } catch (error) {
-    console.error("Erreur migration transactions :", error);
-    res.status(500).json({ message: "Erreur serveur lors de la migration" });
-  }
-};
