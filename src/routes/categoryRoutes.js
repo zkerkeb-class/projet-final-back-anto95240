@@ -15,10 +15,10 @@ const router = express.Router();
 
 router.use(verifytoken);
 
-router.get('/visible', getCategoriesForUser); // ← retourne les globales + perso pour un user
-router.get('/', getCategory);                 // ← toutes les catégories (admin ?)
-router.post('/', validateBody(categorySchema), postCategory);
-router.put('/:id', validateBody(categorySchema), updateCategory);
-router.delete('/:id', deleteCategory);       
+router.get('/visible', getCategoriesForUser);              // GET /api/category/visible
+router.get('/', getCategory);              // GET /api/category/
+router.post('/', validateBody(categorySchema), postCategory);              // POST /api/category/
+router.put('/:id', validateBody(categorySchema), updateCategory);              // PUT /api/category/:id
+router.delete('/:id', deleteCategory);                     // DELETE /api/category/:id
 
 export default router;

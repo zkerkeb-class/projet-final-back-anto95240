@@ -16,7 +16,7 @@ router.use(verifytoken);
 
 // Toutes les routes liées aux comptes
 router.get('/', getAccount);                 // GET /api/account
-router.get('/:me', getMyAccounts);          // GET /api/account/:id
+router.get('/me', getMyAccounts);          // GET /api/account/me
 router.put('/:id', validateBody(updateAccountSchema), updateAccount);           // PUT /api/account/:id
 
 export default router;

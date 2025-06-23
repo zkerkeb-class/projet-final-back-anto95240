@@ -18,7 +18,7 @@ const router = express.Router();
 
 // Toutes les routes liées aux transactions
 router.get('/', verifytoken, getUser);             // GET /api/user
-router.get('/me', verifytoken, getMe);     
+router.get('/me', verifytoken, getMe);               // GET /api/user/me   
 router.post('/login', validateBody(loginSchema), login);         // POST /api/user/login
 router.post('/sign-up', validateBody(userSignUpSchema), signUp);      // POST /api/user/sign-up
 router.put('/:id', verifytoken, upload.single('image'), validateBody(updateUserSchema), updateUser);          // PUT /api/user

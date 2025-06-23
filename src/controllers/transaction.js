@@ -1,8 +1,7 @@
 import Transaction from "../schema/transaction.js";
 import Category from "../schema/category.js";
-import { transactionSchema } from "../validators/transaction.js";
 
-// Récupérer toutes les transactions
+// Récupère toutes les transactions
 export const getTransaction = async (req, res) => {
   try {
     const transactions = await Transaction.find()
@@ -29,7 +28,7 @@ export const getTransaction = async (req, res) => {
   }
 };
 
-// Récupérer une transaction par son ID
+// Récupère une transaction par son ID
 export const getTransactionsByAccountId = async (req, res) => {
   const { accountId } = req.params;
   try {
@@ -62,7 +61,7 @@ export const getTransactionsByAccountId = async (req, res) => {
   }
 };
 
-// Créer une nouvelle transaction
+// Crée une nouvelle transaction
 export const postTransaction = async (req, res) => {
   const { date, paiement, beneficiaire, categoryId, description, type, amount, accountId } = req.body;
   console.log("Requête reçue :", req.body);
@@ -96,7 +95,7 @@ export const postTransaction = async (req, res) => {
   }
 };
 
-// Mettre à jour une transaction par son ID
+// Met à jour une transaction par son ID
 export const updateTransaction = async (req, res) => {
   const { id } = req.params;
   const { categoryId, categoryName, ...rest } = req.body;
@@ -126,7 +125,7 @@ export const updateTransaction = async (req, res) => {
   }
 };
 
-// Supprimer une transaction par son ID
+// Supprime une transaction par son ID
 export const deleteTransaction = async (req, res) => {
   const { id } = req.params;
   try {

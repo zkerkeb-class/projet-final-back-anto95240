@@ -1,5 +1,6 @@
 import Account from "../schema/account.js"
 
+// Récupère tous les comptes
 export const getAccount = async (req, res) => {
   try {
     const accounts = await Account.find();
@@ -9,6 +10,7 @@ export const getAccount = async (req, res) => {
   }
 }
 
+// Récupère le compte du user connecté
 export const getMyAccounts = async (req, res) => {
   try {
     const accounts = await Account.find({ userId: req.userId });
@@ -18,6 +20,7 @@ export const getMyAccounts = async (req, res) => {
   }
 };
 
+// Met a jour le compte
 export const updateAccount = async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;

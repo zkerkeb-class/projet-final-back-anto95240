@@ -1,6 +1,6 @@
 import Category from "../schema/category.js";
 
-// Récupérer les catégories visibles pour l'utilisateur (globales + ses perso)
+// Récupère les catégories visibles pour l'utilisateur (globales + ses perso)
 export const getCategoriesForUser = async (req, res) => {
   const userId = req.userId;
   try {
@@ -16,7 +16,7 @@ export const getCategoriesForUser = async (req, res) => {
   }
 };
 
-// Récupérer toutes les catégories
+// Récupère toutes les catégories
 export const getCategory = async (req, res) => {
   try {
     const categories = await Category.find();
@@ -26,7 +26,7 @@ export const getCategory = async (req, res) => {
   }
 };
 
-// Créer une nouvelle catégorie
+// Crée une nouvelle catégorie
 export const postCategory = async (req, res) => {
   const userId = req.userId;
   try { 
@@ -42,7 +42,7 @@ export const postCategory = async (req, res) => {
   }
 };
 
-// Mettre à jour une catégorie par son ID
+// Met à jour une catégorie par son ID
 export const updateCategory = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;
@@ -77,7 +77,7 @@ export const updateCategory = async (req, res) => {
   }
 };
 
-// Supprimer une catégorie par son ID
+// Supprime une catégorie par son ID
 export const deleteCategory = async (req, res) => {
   const userId = req.userId;
   const { id } = req.params;
@@ -102,10 +102,11 @@ export const deleteCategory = async (req, res) => {
   }
 };
 
+// initialise les catégories par défault pour les users
 export const initCategories = async () => {
   const existingDefaults = await Category.find({ isDefault: true });
   if (existingDefaults.length > 0) {
-    console.log("✅ Catégories par défaut déjà existantes.");
+    console.log(" Catégories par défaut déjà existantes.");
     return;
   }
 

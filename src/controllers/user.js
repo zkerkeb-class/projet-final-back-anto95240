@@ -8,6 +8,7 @@ import Account from '../schema/account.js';
 import Transaction from '../schema/transaction.js';
 import Category from '../schema/category.js';
 
+// Login
 export const login = async (req, res) => {
   const { login, password } = req.body;
 
@@ -52,6 +53,7 @@ export const login = async (req, res) => {
   }
 };
 
+// Register
 export const signUp = async (req, res) => {
   const {
     firstname,
@@ -142,6 +144,7 @@ export const signUp = async (req, res) => {
   }
 };
 
+// Récupère les informations du user connecter
 export const getMe = async (req, res) => {
     const userId = req.userId;   
     console.log("UserID extrait du token :", userId);
@@ -158,6 +161,7 @@ export const getMe = async (req, res) => {
   }
 };
 
+// Récupère tous les user
 export const getUser = async (req, res) => {
   try {
     // const userId = req.userId; // ou req.params.id si route /api/user/:id
@@ -172,6 +176,7 @@ export const getUser = async (req, res) => {
   }
 };
 
+// mets a jour le user
 export const updateUser = async (req, res) => {
   const userId = req.params.id;
   const { password, passwordConfirm, ...updateData } = req.body;
@@ -221,6 +226,7 @@ export const updateUser = async (req, res) => {
   }
 };
 
+// supprime le user ainsi que tous ce qui appartient au user
 export const deleteUser = async (req, res) => {
   const userId = req.params.id;
   try {
