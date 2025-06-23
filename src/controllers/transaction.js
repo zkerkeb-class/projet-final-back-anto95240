@@ -13,7 +13,7 @@ export const getTransaction = async (req, res) => {
       _id: t._id,
       date: t.date,
       paiement: t.paiement,
-      beneficiare: t.beneficiare,
+      beneficiaire: t.beneficiaire,
       categoryId: t.categoryId?._id || null,
       categoryName: t.categoryId?.name || null,
       description: t.description,
@@ -45,7 +45,7 @@ export const getTransactionsByAccountId = async (req, res) => {
       _id: t._id,
       date: t.date,
       paiement: t.paiement,
-      beneficiare: t.beneficiare,
+      beneficiaire: t.beneficiaire,
       categoryId: t.categoryId?._id || null,
       categoryName: t.categoryId?.name || null,
       description: t.description,
@@ -64,7 +64,7 @@ export const getTransactionsByAccountId = async (req, res) => {
 
 // Créer une nouvelle transaction
 export const postTransaction = async (req, res) => {
-  const { date, paiement, beneficiare, categoryId, description, type, amount, accountId } = req.body;
+  const { date, paiement, beneficiaire, categoryId, description, type, amount, accountId } = req.body;
   console.log("Requête reçue :", req.body);
   if (!accountId) {
     return res.status(400).json({ message: "L'ID du compte est obligatoire." });
@@ -79,7 +79,7 @@ export const postTransaction = async (req, res) => {
     const newTransaction = new Transaction({
       date,
       paiement,
-      beneficiare,
+      beneficiaire,
       categoryId,
       description,
       type,
