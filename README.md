@@ -47,7 +47,7 @@ Créer un fichier .env :
 
 ```bash
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/budget-manager
+MONGO_URI=mongodb://localhost:27017/project-db
 JWT_SECRET=ton_secret_jwt
 ```
 
