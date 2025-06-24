@@ -200,9 +200,8 @@ export const updateUser = async (req, res) => {
 
     // Gestion de l'image avatar
     if (req.file) {
-      // Supprimer l'ancien fichier si existant
       if (existingUser.image && existingUser.image.startsWith('uploads/')) {
-        const oldPath = path.join(existingUser.image);
+        const oldPath = path.join(process.cwd(), existingUser.image);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
       updateData.image = `uploads/${req.file.filename}`;
