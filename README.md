@@ -2,7 +2,8 @@
 
 Application web de gestion de budget personnel avec utilisateurs, comptes, transactions, catégories, statistiques, et traductions.
 
-Développé avec par Antoine RICHARD
+
+Développé par Antoine RICHARD
 
 ## Fonctionnalités principales
 
