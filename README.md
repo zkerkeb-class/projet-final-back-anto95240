@@ -2,15 +2,25 @@
 
 Application web de gestion de budget personnel avec utilisateurs, comptes, transactions, catégories, statistiques, et traductions.
 
+Développé avec par Antoine RICHARD
+
 ## Fonctionnalités principales
 
--  Authentification sécurisée (JWT, bcrypt)
+- Authentification sécurisée (JWT, bcrypt)
 - Gestion des utilisateurs (CRUD + reset mot de passe)
 - Gestion des comptes bancaires (type, budget de départ)
 - Gestion des transactions (ajout, édition, suppression)
 - Gestion des catégories (globales par défaut + personnalisées)
 - Duplication automatique des catégories par défaut à l'inscription
 - Architecture RESTful claire (user, account, category, transaction)
+
+## Bonus
+
+- Responsive design (mobile / desktop)
+
+## Lien externe
+
+Figma : https://www.figma.com/design/iHhUT56KhHDlVPIMZrzq64/DEV-WEB?node-id=28-311&t=YV4AYmS3wX8gDGhK-1
 
 ---
 
