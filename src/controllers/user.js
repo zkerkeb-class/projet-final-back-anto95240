@@ -146,8 +146,7 @@ export const signUp = async (req, res) => {
 
 // Récupère les informations du user connecter
 export const getMe = async (req, res) => {
-    const userId = req.userId;   
-    console.log("UserID extrait du token :", userId);
+  const userId = req.userId;   
 
   try {
     const user = await User.findById(userId).select('-passwordHash');
@@ -164,8 +163,7 @@ export const getMe = async (req, res) => {
 // Récupère tous les user
 export const getUser = async (req, res) => {
   try {
-    // const userId = req.userId; // ou req.params.id si route /api/user/:id
-    const user = await User.find().select('-passwordHash'); // ne pas renvoyer le hash mdp
+    const user = await User.find().select('-passwordHash');
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
